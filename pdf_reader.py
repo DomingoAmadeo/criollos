@@ -10,27 +10,27 @@ def create_form(parent):
     first_row = {
     'Nombre' : [None, None],
     'SBA' : [None, None, 10]
-}
+    }
     second_row = {
     'Sexo' : [None, None, 9],
     'Pelaje' : [None, None],
     'Nacimiento' : [None, None, 11],
     'RP' : [None, None, 6]
-}
+    }
     third_row = {
     'Criador' : [None, None],
     'Propietario' : [None, None]
-}
+    }
     fourth_row = {
     'Padre' : [None, None],
     'RP' : [None, None, 6],
     'SBA' : [None, None, 10]
-}
+    }
     fifth_row = {
     'Madre' : [None, None],
     'RP' : [None, None, 6],
     'SBA' : [None, None, 10]
-}
+    }
     widget_holder = [first_row, second_row, third_row, fourth_row, fifth_row]   # Matrix for grid placement
 
     for row in widget_holder:
@@ -42,6 +42,7 @@ def create_form(parent):
                 value[0]['width'] = 9                                       # First entry box of each row alignment
             value[0].pack(side='left', padx= (5,0), pady=5)
             value[1] = ttk.Entry(new_frame)
+            value[1].state(('readonly',))
             if len(value) == 3:                                             # Using a hardcoded third value included in some of the lists
                 value[1]['width'] = value[2]                                # to assign width
                 value[1]['justify'] = 'right'                               # Numbers are justified right
@@ -128,13 +129,20 @@ def update_form(form, matrix):
     for i, row in enumerate(form):
         segment = matrix[i]
         for key, value in row.items():
+            value[1].state(('!readonly',))
             value[1].insert(0, segment[key])
+            value[1].state(('readonly',))
+
 
 root = tk.Tk()
 app_style = ttk.Style()
-app_style.theme_use('alt')          # alt clam classic default 
+app_style.theme_use('default')          # alt clam classic default
+fieldbg = app_style.lookup("TEntry", 'fieldbackground',('!readonly','!disabled'))
+disabledfbg = app_style.lookup("TEntry", 'fieldbackground',('!readonly','disabled'))
+app_style.map('TEntry',
+    fieldbackground=[('readonly', fieldbg), ('disabled', disabledfbg)])
 
-root.geometry('600x246')
+root.geometry('600x231')
 root.title('Criollos')
 #root.iconbitmap()
 #root.resizable(False, False)
