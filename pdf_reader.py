@@ -130,6 +130,7 @@ def update_form(form, matrix):
         segment = matrix[i]
         for key, value in row.items():
             value[1].state(('!readonly',))
+            value[1].delete(0, 'end')
             value[1].insert(0, segment[key])
             value[1].state(('readonly',))
 
