@@ -1,11 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
-from PyPDF2 import PdfReader
+import db_interface as dbi
 
 
 def create_form(parent):
-
     # .pack() method doesn't support grid placement, i'm creating a matrix to bypass that
     first_row = {
     'Nombre' : [None, None],
@@ -58,71 +57,16 @@ def create_form(parent):
 def OpenFiles(form):
     # File selection
     file = filedialog.askopenfilename(title='Elegí archivos .PDF', filetypes=(('Archivos PDF', '*.pdf'),('Todos los archivos', '*.*')))
-    reader = PdfReader(file)
-    content = []
 
-    #File parsing and simplifying 
-    for page in reader.pages:
-        for item in page.extract_text().splitlines():
-            content.append(item.strip())
-
-    #Content matching for data
-    name = content.index('Nombre del Producto:') + 1
-    id = content.index('D SBA:') + 1
-    sex = content.index('SEXO:') + 1
-    birth = content.index('Fecha de Nacimiento:') + 2
-    hair = birth - 3
-    tag = content.index('Tatuaje:') + 1
-    establishment = content.index('Criador:') + 1
-    owner = content.index('Propietario:') + 1
-
-    # Matrix replication and data insertion
-    viewed_horse = [{
-        'Nombre' : content[name],
-        'SBA' : content[id]
-        },
-        {
-        'Sexo' : content[sex],
-        'Pelaje' : content[hair],
-        'Nacimiento' : content[birth],
-        'RP' : content[tag]
-        },
-        {
-        'Criador' : content[establishment],
-        'Propietario' : content[owner]
-        }]
-
-    regex = 'D|{}|{}|{}'.format(viewed_horse[0]['SBA'], viewed_horse[1]['RP'], viewed_horse[1]['Pelaje'])
-    father_name = content[content.index(regex) - 7]
-    father_info = content[content.index(regex) - 6]
-    mother_name = content[content.index(regex) - 5]
-    mother_info = content[content.index(regex) - 4]
-
-    father_object = construct_progenitor_object('Padre', father_name, father_info)
-    mother_object = construct_progenitor_object('Madre', mother_name, mother_info)
-
-    form_matrix = [*viewed_horse, father_object, mother_object] # Matrix format replicated
-
+    form_matrix = dbi.pdf_import(file)
     update_form(form, form_matrix)
 
-def construct_progenitor_object(sex, name, info):
-    #Separating grouped data
-    info = info.split('|')
-    id = info[1]
+def DeleteInstance(form):
+    dbi.remove_record(form[0]['SBA'][1].get())
 
-    info = info[2].split(' ', 1)
-    hair = info[1]
-
-    info = info[0].split(':')
-    tag = info[1]
-
-    progenitor_object = {
-        sex : name,
-        #'Pelaje' : hair,
-        'RP' : tag,
-        'SBA' : id
-    }
-    return progenitor_object
+def SaveInstance(form):
+    viewed_animal = get_form_data(form)
+    dbi.insert_row(viewed_animal)
 
 def update_form(form, matrix):
     #Overlapping widget matrix with data matrix to update fields
@@ -134,6 +78,28 @@ def update_form(form, matrix):
             value[1].insert(0, segment[key])
             value[1].state(('readonly',))
 
+def get_form_data(form):
+    viewed_animal = {        
+        'SBA' : None,
+        'RP' : None,
+        'Sexo' : None,
+        'Nombre' : None,
+        'Nacimiento' : None,
+        'Pelaje' : None,
+        'Criador' : None,
+        'Propietario' : None,
+        'Padre' : None,
+        'Madre' : None
+    }
+    for i, row in enumerate(form):
+        if i < 3:
+            for key, value in row.items():
+                viewed_animal[key] = value[1].get()
+        elif 'Padre' in row:
+                viewed_animal['Padre'] = row['SBA'][1].get()
+        else:
+            viewed_animal['Madre'] = row['SBA'][1].get()
+    return viewed_animal
 
 root = tk.Tk()
 app_style = ttk.Style()
@@ -156,7 +122,12 @@ frame.pack(fill='both')
 form = create_form(frame)           # PDF widget visualization gets tracked
 
 file_button = ttk.Button(frame, text= 'Abrir', command= lambda: OpenFiles(form))
-file_button.pack(side='top', pady=(0,10))
+file_button.pack(side='left', pady=(0,10), expand= 1)
 
+file_button = ttk.Button(frame, text= 'Guardar', command= lambda: SaveInstance(form))
+file_button.pack(side='left', pady=(0,10), expand= 1)
+
+file_button = ttk.Button(frame, text= 'Borrar', command= lambda: DeleteInstance(form))
+file_button.pack(side='left', pady=(0,10), expand= 1)
 
 root.mainloop()
