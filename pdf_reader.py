@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import criollos_GUI as cGUI
+import criollos_graphic_resources as cgr
 import style
 
 
@@ -15,6 +16,7 @@ root.option_add('*tearOff', 'false')
 app_style = ttk.Style()
 app_style.theme_use('default')          # alt clam classic default
 style.apply(app_style)                  # Apply style modifications
+cgr.GUI()                               # Initialize graphic resources
 
 # Create tab division
 def window_size_manager(event : tk.Event):
@@ -42,6 +44,12 @@ table_tab = ttk.Frame(notebook_widget)
 table_tab.pack(fill='both')
 cGUI.populate_table_tab(table_tab)
 notebook_widget.add(table_tab, text='Registros')
+
+# Ancestry tab
+ancestry_tab = ttk.Frame(notebook_widget)
+ancestry_tab.pack(expand= True, fill= 'both')
+cGUI.populate_ancestry_tab(ancestry_tab)
+notebook_widget.add(ancestry_tab, text='Genealógico')
 
 root.update_idletasks()
 

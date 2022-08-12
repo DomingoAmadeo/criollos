@@ -3,6 +3,7 @@ from tkinter import ttk
 from dateentry_widget import Dateentry
 import detail_logic as dl
 import table_logic as tl
+import criollos_graphic_resources as cgr
 import db_interface as dbi
 
 def create_label_widget_pair(parent_frame, pair_name, pair_list, pady, method = ttk.Entry):
@@ -202,3 +203,38 @@ def populate_table_tab(parent_widget):
     right_button = ttk.Button(footer_navigation, padding=(0,0,0,10), width=3, command= lambda: page_var.set(int(right_button['text'])))
     last_button = ttk.Button(footer_navigation, padding=(0,0,0,10), width=6, command= lambda: page_var.set(last_page_var.get()), text='Ultima')
 
+def populate_ancestry_tab(master):
+    def create_ancestry_form(parent):
+        #Create the entry boxes for data population
+        for i in range(1, 32):
+            entry = ttk.Entry(parent)
+            if i % 16 == 0:
+                entry.grid(column=0, row= i)
+            elif i % 8 == 0:
+                entry.grid(column=2, row= i)
+            elif i % 4 == 0:
+                entry.grid(column=4, row= i)
+            elif i % 2 == 0:
+                entry.grid(column=6, row= i)
+            elif i % 2 == 1:
+                entry.grid(column=8, row= i)
+
+        # Request image object
+        ancestry_brackets = cgr.GUI.ancestry_brackets
+
+        # Populate grid with image object
+        for i in range (4):                             # i, reverse_i in zip(range (4), reversed(range(4))):
+            column = [1, 3, 5, 7]                       # i * 2 + 1
+            amount = [1, 2, 4, 8]                       # math.pow(2, i)
+            starting_index = amount[::-1]               # math.pow(2, reverse_i)        amount reversed
+            step = [32, 16, 8, 4]                       # 32 / amount
+            rowspan = starting_index[i] * 3
+            for n_label in range(amount[i]):
+                row = n_label * step[i] + starting_index[i]
+                tk.Label(parent, image=ancestry_brackets[-1], bd=0)\
+                .grid(column=column[i], row= row, rowspan=rowspan, sticky='nw', pady=9) # ancestry_brackets[-1] gets the image intended for this loop
+            cgr.GUI.image_subsample(ancestry_brackets, 1, 2)                            # and sets the next one
+
+    ancestry_frame = ttk.Frame(master)
+    ancestry_frame.pack(fill='both', expand=True, padx=10, pady=10)
+    create_ancestry_form(ancestry_frame)
