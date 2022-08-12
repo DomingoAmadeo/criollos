@@ -37,6 +37,12 @@ detailed_tab.pack(fill='both', expand=True)
 cGUI.populate_detailed_tab(detailed_tab)
 notebook_widget.add(detailed_tab, text= 'Vista detallada')
 
+# Table tab
+table_tab = ttk.Frame(notebook_widget)
+table_tab.pack(fill='both')
+cGUI.populate_table_tab(table_tab)
+notebook_widget.add(table_tab, text='Registros')
+
 root.update_idletasks()
 
 root.mainloop()

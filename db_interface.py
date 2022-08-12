@@ -24,7 +24,11 @@ def create_table():
                         Criador TEXT,
                         Propietario TEXT,
                         Padre TEXT,
-                        Madre TEXT
+                        Madre TEXT,
+                        PNombre TEXT,
+                        Mnombre TEXT,
+                        RPPadre TEXT,
+                        RPMadre TEXT
                         )''')                       
         conn.close()
 
@@ -61,9 +65,13 @@ def xlsx_import(list_of_paths):
         df = pd.concat(dfs)                                             # Unify files
         df = df.drop_duplicates(keep='last')                            #Drop dupes
 
-        # Data formatting
-        df['Padre'] = df['Padre'].str.extract('SBA.?(\d+).?-', expand= True)
-        df['Madre'] = df['Madre'].str.extract('SBA.?(\d+).?-', expand= True)
+        # Data formatting 
+        df['RPPadre'] = df['Padre'].str.extract('RP:\s?(\d+)\s?-', expand= True)
+        df['PNombre'] = df['Padre'].str.extract('.+-.+-.+-([0-9a-zA-z\s]+)', expand= True)
+        df['Padre'] = df['Padre'].str.extract('SBA.?(\d+).?-?', expand= True)
+        df['RPMadre'] = df['Madre'].str.extract('RP:\s?(\d+)\s?-', expand= True)
+        df['MNombre'] = df['Madre'].str.extract('.+-.+-.+-([0-9a-zA-z\s]+)', expand= True)
+        df['Madre'] = df['Madre'].str.extract('SBA.?(\d+).?-?', expand= True)
         df['Fecha Nacimiento'] = df['Fecha Nacimiento'].dt.strftime('%d-%m-%Y')
 
         # Handling Male/Female identical ID
@@ -74,7 +82,8 @@ def xlsx_import(list_of_paths):
         #Formatting important comlumns for SQL insertion
         df['SBA'] = df['Tipo Registro'] + '-' + df['Identif./ Nro.']
         df = df.rename(columns={"Color": "Pelaje", "Fecha Nacimiento": "Nacimiento", "Prop." : "Propietario"})
-        df = df[['SBA'] + ['RP'] + ['Sexo'] + ['Nombre'] + ['Nacimiento'] + ['Pelaje'] + ['Criador'] + ['Propietario'] + ['Padre'] + ['Madre']]
+        df = df[['SBA'] + ['RP'] + ['Sexo'] + ['Nombre'] + ['Nacimiento'] + ['Pelaje'] + ['Criador'] + ['Propietario'] +
+                ['Padre'] + ['Madre'] + ['PNombre'] + ['MNombre'] + ['RPPadre'] + ['RPMadre']]
         
         # Test for finding gender duplicates
         #mask = df['SBA'].duplicated(keep=False)
@@ -181,10 +190,35 @@ def printed_pdf(content):
                 form_dict.update(d)
         form_dict['Padre'] = father_object['SBA']
         form_dict['Madre'] = mother_object['SBA']
-        
+
         return form_matrix,form_dict
 
-create_table()
+def prepared_query(string_query, values):
+        conn, c = db_connect()
+        request = pd.read_sql_query(string_query, conn, params=values)
+        conn.close()
+        return request
 
+def combobox_query(string):
+        conn, c = db_connect()        
+        c.row_factory = lambda cursor, row: row[0]
+
+        if string == 'Prefijo':
+                request = c.execute('''SELECT name FROM(
+                                SELECT SUBSTR(Nombre, 1, INSTR(Nombre, ' ') - 1) AS name, COUNT(*) AS unique_count FROM caballos
+                                WHERE Nombre IS NOT NULL
+                                GROUP BY SUBSTR(Nombre, 1, INSTR(Nombre, ' ') - 1)
+                                ORDER BY Nombre ASC
+                                )WHERE unique_count > 1''').fetchall() 
+        else:                        
+                request = c.execute(f'''SELECT DISTINCT {string} FROM caballos
+                                        WHERE {string} IS NOT NULL
+                                        ORDER BY {string} ASC''').fetchall()
+        if string == 'Criador' or string == 'Propietario':
+                request.sort(key= lambda item: int(item))
+        conn.close()
+        return request
+
+create_table()
 
        
