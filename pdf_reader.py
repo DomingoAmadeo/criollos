@@ -3,6 +3,7 @@ from tkinter import ttk
 import criollos_GUI as cGUI
 import criollos_graphic_resources as cgr
 import style
+from table_logic import selector_query
 
 
 root = tk.Tk()
@@ -32,6 +33,20 @@ def window_size_manager(event : tk.Event):
 notebook_widget = ttk.Notebook(root, takefocus=False)
 notebook_widget.pack(fill='both', expand=True)
 notebook_widget.bind('<<NotebookTabChanged>>', window_size_manager)
+
+# Home Tab
+home_tab = ttk.Frame(notebook_widget)
+home_tab.pack(fill='both', expand=True)
+reference_selector = ttk.Combobox(home_tab)
+reference_selector['values'] = ['SBA', 'RP', 'Nombre']
+reference_selector.insert(0, 'Seleccione una opcion')
+reference_selector.state(('readonly',))
+reference_selector.pack(padx=(50,0), pady=75, side='left', expand=True)
+entry_selector = ttk.Entry(home_tab)
+entry_selector.pack(padx=10, pady=75, side='left', expand=True)
+button_selector = ttk.Button(home_tab, text='Buscar', command= lambda: selector_query(reference_selector.get(), entry_selector.get(), root))
+button_selector.pack(padx=(0,50), pady=75,  side='left', expand=True)
+notebook_widget.add(home_tab, text= 'Inicio')
 
 # Detailed tab
 detailed_tab = ttk.Frame(notebook_widget)
