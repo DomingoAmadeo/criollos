@@ -100,8 +100,8 @@ def pdf_import(file):
                 for item in page.extract_text().splitlines():
                         content.append(item.strip())
 
-        form_matrix = printed_pdf(content)
-        
+        form_matrix, form_dict = printed_pdf(content)
+
         return form_matrix
 
 def printed_pdf(content):
@@ -175,8 +175,14 @@ def printed_pdf(content):
         mother_object = construct_progenitor_object('Madre', mother_name, mother_info)
 
         form_matrix = [*horse_from_pdf, father_object, mother_object] # Matrix format replicated
+                
+        form_dict = {}
+        for d in horse_from_pdf:
+                form_dict.update(d)
+        form_dict['Padre'] = father_object['SBA']
+        form_dict['Madre'] = mother_object['SBA']
         
-        return form_matrix
+        return form_matrix,form_dict
 
 create_table()
 
