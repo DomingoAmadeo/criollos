@@ -1,4 +1,4 @@
 __pycache__/
 test/
-test.py
-style_element_getter.py
+test_scripts/
+pdf_reader.spec
