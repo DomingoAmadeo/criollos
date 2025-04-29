@@ -75,6 +75,9 @@ def populate_detailed_tab(frame):
     clear_button = ttk.Button(frame, text= 'Borrar', command= lambda: dl.DeleteInstance(form_children))
     clear_button.pack(side='left', pady=(0,10), expand=True)
 
+    ancestry_button = ttk.Button(frame, text= 'Genealogico', command= lambda: dl.open_ancestry(frame, form_children))
+    ancestry_button.pack(side='left', pady=(0,10), expand=True)
+
 def populate_table_tab(parent_widget):
     def populate_filter_frame(master_widget):
         # Creating a matrix with dictionaries as rows due to pack() limitations
@@ -203,31 +206,34 @@ def populate_table_tab(parent_widget):
     right_button = ttk.Button(footer_navigation, padding=(0,0,0,10), width=3, command= lambda: page_var.set(int(right_button['text'])))
     last_button = ttk.Button(footer_navigation, padding=(0,0,0,10), width=6, command= lambda: page_var.set(last_page_var.get()), text='Ultima')
 
-def populate_ancestry_tab(master):
+def populate_ancestry_tab(master, color):
+    def onFrameConfigure(canvas):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
     def create_ancestry_form(parent):
-        #Create the entry boxes for data population
+        #Create the labels for data population
         for i in range(1, 32):
-            entry = ttk.Entry(parent)
+            label = ttk.Label(parent, relief='sunken', borderwidth=1, background='white')
             if i % 16 == 0:
-                entry.grid(column=0, row= i)
+                label.grid(column=0, row= i, rowspan=2, padx=(2,0), pady=(0,3), sticky='nwse')
             elif i % 8 == 0:
-                entry.grid(column=2, row= i)
+                label.grid(column=2, row= i, rowspan=2, padx=(2,0), pady=(3,3), sticky='nwse')
             elif i % 4 == 0:
-                entry.grid(column=4, row= i)
+                label.grid(column=4, row= i, rowspan=2, padx=(2,0), pady=(0,3), sticky='nwse')
             elif i % 2 == 0:
-                entry.grid(column=6, row= i)
+                label.grid(column=6, row= i, rowspan=2, padx=(2,0), pady=(0,3), sticky='nwse')
             elif i % 2 == 1:
-                entry.grid(column=8, row= i)
+                label.grid(column=8, row= i, rowspan=2, padx=(2,0), pady=(0,3), sticky='nwse')
 
         # Request image object
         ancestry_brackets = cgr.GUI.ancestry_brackets
 
-        # Populate grid with image object
+        # Populate grid with image object               # visible_ancestors = 5 -- images_required = 4
         for i in range (4):                             # i, reverse_i in zip(range (4), reversed(range(4))):
             column = [1, 3, 5, 7]                       # i * 2 + 1
             amount = [1, 2, 4, 8]                       # math.pow(2, i)
             starting_index = amount[::-1]               # math.pow(2, reverse_i)        amount reversed
-            step = [32, 16, 8, 4]                       # 32 / amount
+            step = [32, 16, 8, 4]                       # math.pow(2, 5) / amount
             rowspan = starting_index[i] * 3
             for n_label in range(amount[i]):
                 row = n_label * step[i] + starting_index[i]
@@ -235,6 +241,18 @@ def populate_ancestry_tab(master):
                 .grid(column=column[i], row= row, rowspan=rowspan, sticky='nw', pady=9) # ancestry_brackets[-1] gets the image intended for this loop
             cgr.GUI.image_subsample(ancestry_brackets, 1, 2)                            # and sets the next one
 
-    ancestry_frame = ttk.Frame(master)
-    ancestry_frame.pack(fill='both', expand=True, padx=10, pady=10)
+    canvas = tk.Canvas(master, bg=color, highlightthickness=0)
+    ancestry_frame = ttk.Frame(canvas)
+    # y_scroll = ttk.Scrollbar(master, orient='vertical', command=canvas.yview)
+    x_scroll = ttk.Scrollbar(master, orient='horizontal', command=canvas.xview)
+    # canvas.config(yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set)
+    canvas.config(xscrollcommand=x_scroll.set)
+
+    # y_scroll.pack(side='right', fill='y')
+    x_scroll.pack(side='bottom', fill='x')
+    canvas.pack(side="top", fill="both", expand=True, pady=10, padx=5)
+    canvas.create_window((4,4), window=ancestry_frame, anchor="nw")
+    
+    ancestry_frame.bind("<Configure>", lambda event, canvas=canvas: onFrameConfigure(canvas))
+    
     create_ancestry_form(ancestry_frame)

@@ -26,7 +26,7 @@ def create_table():
                         Padre TEXT,
                         Madre TEXT,
                         PNombre TEXT,
-                        Mnombre TEXT,
+                        MNombre TEXT,
                         RPPadre TEXT,
                         RPMadre TEXT
                         )''')                       
@@ -219,6 +219,14 @@ def combobox_query(string):
         conn.close()
         return request
 
+def prog_query(id):
+        conn, c = db_connect()
+        query_string = 'SELECT * FROM caballos WHERE CAST(SUBSTR(SBA, INSTR(SBA, "-") + 1) AS INTEGER) = ?'
+        request = pd.read_sql_query(query_string, conn, params=(id,))
+        conn.close()
+        return request
+
 create_table()
 
-       
+example = ['test/xlsx/0-40k.xlsx', 'test/xlsx/40-65.xlsx', 'test/xlsx/65+.xlsx']
+#xlsx_import(example)

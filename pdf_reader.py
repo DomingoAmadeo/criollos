@@ -61,11 +61,16 @@ cGUI.populate_table_tab(table_tab)
 notebook_widget.add(table_tab, text='Registros')
 
 # Ancestry tab
-ancestry_tab = ttk.Frame(notebook_widget)
+ancestry_tab = ttk.Frame(notebook_widget, height='600', width='1100')
 ancestry_tab.pack(expand= True, fill= 'both')
-cGUI.populate_ancestry_tab(ancestry_tab)
+ancestry_tab.pack_propagate(0)
+bgcolor = app_style.lookup('TFrame', 'background')
+cGUI.populate_ancestry_tab(ancestry_tab, bgcolor)
 notebook_widget.add(ancestry_tab, text='Genealógico')
 
 root.update_idletasks()
+
+#notebook_widget.select(1)
+#root.bind('<Button-1>', lambda e: print(e.widget))
 
 root.mainloop()

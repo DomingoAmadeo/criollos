@@ -8,7 +8,7 @@ def query_data(filters, in_memory_dataframe, page_var):
         # Setting the page_var to insert the DF into the table
         page_var.set(1)
 
-def create_filtered_query(filters):
+def create_filtered_query(filters):                         # BUG NO EXISTE PREFIJO EN LA TABLA
     def extract_data(filters):
         placeholder_dict = {}
         # Traversing the widget matrix
@@ -325,11 +325,10 @@ def update_geometry(widget):
 
 def selector_query(selector, input, toplevel):
     if input.isdecimal():
-        input = ['', '', input]
+        input = ['', '', input]                                 # Formatting for "=" operator in query_db()
     else: 
         input = [input]
     horse_list = query_db({selector : input}).values.tolist()
-    print(horse_list)
 
     table = toplevel.winfo_children()[0].winfo_children()[2].winfo_children()[3].winfo_children()[0]
     for child in table.get_children():
